@@ -84,25 +84,17 @@ function clean() {
 
 var build = gulp.series(clean, gulp.parallel(html, scripts, styles, css, fonts, images));
 
-function watch(){
-    gulp.watch(path.watch.style, styles); 
-    gulp.watch(path.watch.html, html); 
-    gulp.watch(path.watch.img, images);
-    gulp.watch(path.watch.js, scripts);
-  };
-// gulp.task("browserSync", function () {
-//    browserSync.init({
-//         server: {
-//             baseDir: "./"
-//         }
-//     });
-//      gulp.watch(path.watch.style, styles).on("change", browserSync.reload); 
-//     gulp.watch(path.watch.html, html).on("change", browserSync.reload); 
-//     gulp.watch(path.watch.img, images);
-//     gulp.watch(path.watch.js, scripts).on("change", browserSync.reload);
+ function browser() {
+   browserSync.init({
+        server: {
+            baseDir: "build"
+        }
+    });
+    gulp.watch(path.watch.style, styles).on("change", browserSync.reload); 
+    gulp.watch(path.watch.html, html).on("change", browserSync.reload); 
+    gulp.watch(path.watch.img, images).on("change", browserSync.reload);
+    gulp.watch(path.watch.js, scripts).on("change", browserSync.reload);
 
-// }
+}
 
-    // )
-gulp.task('default', gulp.series(build, watch));
-// 
+gulp.task('default', gulp.series(build, browser));
