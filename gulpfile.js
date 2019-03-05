@@ -2,6 +2,7 @@
 
 var gulp = require('gulp'),
     sass = require('gulp-sass'),
+    less = require('gulp-less'),
     imagemin = require('gulp-imagemin'),
     cssmin = require('gulp-clean-css'),
     del = require('del'),
@@ -19,7 +20,7 @@ var path = {
     src: { 
         html: 'src/index.html', 
         js: 'src/js/*.js',
-        style: 'src/style/main.scss',
+        style: 'src/style/main.less',
         css: 'src/style/*.css',
         img: 'src/images/*.*', 
         fonts: 'src/fonts/*.*'
@@ -27,7 +28,7 @@ var path = {
     watch: { 
         html: 'src/index.html',
         js: 'src/js/**/*.js',
-        style: 'src/style/**/*.scss',
+        style: 'src/style/**/*.less',
         img: 'src/images/*.*',
         fonts: 'src/fonts/*.*'
     },
@@ -44,14 +45,29 @@ function scripts(){
         .pipe(gulp.dest(path.build.js));
 };
 
-function styles(){
+// function styles(){
+//     return gulp.src(path.src.style)
+//         .pipe(sass())
+//         .pipe(autoprefixer())
+//         .pipe(cssmin())
+//         .pipe(gulp.dest(path.build.css));
+// };
+
+gulp.task('less', () => {
     return gulp.src(path.src.style)
-        .pipe(sass())
-        .pipe(autoprefixer())
+        .pipe(less())
+        .pipe(autoprefixer({
+            browsers: [
+                'last 2 versions',
+                'safari 5',
+                'ie 10',
+                'ie 11'
+            ],
+            cascade: true
+        }))
         .pipe(cssmin())
         .pipe(gulp.dest(path.build.css));
-};
-
+});
 function css(){
     return gulp.src(path.src.css)
         .pipe(cssmin())
@@ -82,7 +98,7 @@ function clean() {
     return del([path.clean]); 
 };
 
-var build = gulp.series(clean, gulp.parallel(html, scripts, styles, css, fonts, images));
+gulp.task('build', gulp.series(clean, gulp.parallel('less', html, scripts, css, fonts, images)));
 
  function browser() {
    browserSync.init({
@@ -90,11 +106,10 @@ var build = gulp.series(clean, gulp.parallel(html, scripts, styles, css, fonts, 
             baseDir: "build"
         }
     });
-    gulp.watch(path.watch.style, styles).on("change", browserSync.reload); 
+    gulp.watch(path.watch.style, gulp.series('less')).on("change", browserSync.reload); 
     gulp.watch(path.watch.html, html).on("change", browserSync.reload); 
     gulp.watch(path.watch.img, images).on("change", browserSync.reload);
     gulp.watch(path.watch.js, scripts).on("change", browserSync.reload);
-
 }
 
-gulp.task('default', gulp.series(build, browser));
+gulp.task('default', gulp.series("build", browser));
